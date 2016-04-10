@@ -1,0 +1,45 @@
+{
+  "name": "passport-okta-oidc-bearer",
+  "version": "0.0.1",
+  "description": "Passport.js strategy for OpenID Connect ID Token",
+  "private": true,
+  "keywords": [
+    "passport",
+    "bearer",
+    "token",
+    "oauth",
+    "oidc",
+    "openid",
+    "openid_connect",
+  ],
+  "main": "./lib",
+  "scripts": {
+    "test": "mocha | bunyan -o short -l debug"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mcguinness/passport-okta-oidc-bearer.git"
+  },
+  "author": {
+    "name" : "Karl McGuinness",
+    "email" : "dev@karlmcguinness.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mcguinness/passport-okta-oidc-bearer/issues"
+  },
+  "homepage": "https://github.com/mcguinness/passport-okta-oidc-bearer#readme",
+  "dependencies": {
+    "async": "^2.0.0-rc.3",
+    "bunyan": "^1.8.0",
+    "jsonwebtoken": "^5.7.0",
+    "passport-http-bearer": "^1.0.1",
+    "request": "^2.70.0"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "chai-passport-strategy": "^1.0.0",
+    "mocha": "^2.4.5",
+    "sinon": "^1.17.3"
+  }
+}
