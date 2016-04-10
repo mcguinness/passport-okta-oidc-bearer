@@ -10,7 +10,7 @@
     "oauth",
     "oidc",
     "openid",
-    "openid_connect",
+    "openid_connect"
   ],
   "main": "./lib",
   "scripts": {
