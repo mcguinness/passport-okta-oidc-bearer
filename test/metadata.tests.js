@@ -1,58 +1,49 @@
 var assert = require('chai').assert;
-var sinon = require('sinon');
+var nock = require('nock');
 var path = require('path');
 var fs = require('fs');
-var Metadata = require('../lib/metadata.js');
+var MetadataProvider = require('../lib/metadata-provider.js');
 
-describe('Metadata', function() {
+describe('MetadataProvider', function() {
 
   var issuer = 'https://example.oktapreview.com';
-  var oidcConfigPath = '/.well-known/openid-configuration';
-  var oidcConfig = fs.readFileSync(path.join(__dirname, 'openid-configuration.json'), 'utf8');
-  var jwkPath = '/oauth2/v1/keys';
-  var jwk = fs.readFileSync(path.join(__dirname, 'keys.json'), 'utf8');
+  var opMetadataPath = '/.well-known/openid-configuration';
+  var jwksPath = '/oauth2/v1/keys';
   var kid ='C4NgL2QHTzoER_o13LbskjXZMQWQhQTYg3otPGGZGXY';
-  var server;
 
   beforeEach(function() {
-    server = sinon.fakeServer.create();
-    server.respondWith('GET', oidcConfigPath,
-      [
-        200,
-        { "Content-Type": "application/json" },
-        oidcConfig
-      ]);
-
-    server.respondWith('GET', jwkPath,
-      [
-        200,
-        { "Content-Type": "application/json" },
-        jwk
-      ]);
+    nock(issuer)
+      .get(opMetadataPath)
+      .replyWithFile(200, path.join(__dirname, 'openid-configuration.json'))
+      .get(jwksPath)
+      .replyWithFile(200, path.join(__dirname, 'keys.json'));
   });
 
   afterEach(function () {
-    server.restore();
+    nock.cleanAll();
   });
 
-  describe('#fetch()', function () {
+  describe('#get()', function() {
 
-    it('should have OIDC provider metadata with key and PEM certificate', function(done) {
+    var provider = new MetadataProvider(issuer + opMetadataPath, {loggingLevel: 'debug'});
 
-      var oidcMetadata = new Metadata(issuer + oidcConfigPath, {loggingLevel: 'debug'});
+    it('should have OpenID Provider metadata with issuer and JWKS', function(done) {
+      provider.get(function(err, metadata) {
+        assert.equal(metadata.issuer, 'https://example.oktapreview.com');
+        assert.equal(metadata.jwks_uri, 'https://example.oktapreview.com/oauth2/v1/keys');
+        done();
+      });
+    });
 
-      oidcMetadata.fetch(function(err) {
-        assert.equal(oidcMetadata.metadata.issuer, 'https://example.oktapreview.com');
-        assert.equal(oidcMetadata.metadata.jwks_uri, 'https://example.oktapreview.com/oauth2/v1/keys');
-
-        var key = oidcMetadata.getKey(kid);
+    it('should have OpenID Provider metadata with key and PEM certificate', function(done) {
+      provider.getKey(kid, function(err, key) {
         assert.isNull(err);
         assert.isNotNull(key);
         assert.isNotNull(key.pem);
         assert.equal(key.kid, kid);
-
         done();
       })
     });
+
   });
 });
