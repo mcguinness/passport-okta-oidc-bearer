@@ -163,6 +163,51 @@ describe('Strategy', function() {
       });
     });
 
+    describe('valid bearer request with scope', function() {
+      var user;
+      var info;
+      before(function(done) {
+        clock = sinon.useFakeTimers((expiresAt - 60) * 1000);
+        chai.passport.use(strategy)
+          .success(function(u, i) {
+            user = u;
+            info = i;
+            done();
+          })
+          .req(function(req) {
+            req.headers.authorization = 'BEARER ' + access_token;
+          })
+          .authenticate({scopes: ['profile', 'email']});
+      });
+
+      it('should have scope', function() {
+        expect(user).to.be.an.object;
+        expect(user.sub).to.equal(subject);
+      });
+    });
+
+    describe('valid bearer request without scope', function() {
+      var challenge;
+
+      before(function(done) {
+        clock = sinon.useFakeTimers((expiresAt - 60) * 1000);
+        chai.passport.use(strategy)
+          .fail(function(c) {
+            challenge = c;
+            done();
+          })
+          .req(function(req) {
+            req.headers.authorization = 'BEARER ' + access_token;
+          })
+          .authenticate({scopes: ['missing']});
+      });
+
+      it('should challenge for scope', function() {
+        expect(challenge).to.be.a.string;
+        expect(challenge).to.equal('Bearer realm="OAUTH", scope="missing", error="insufficient_scope", error_description="Insufficient scope for this resource"');
+      });
+    });
+
     describe('invalid bearer request', function() {
 
       describe('with expired token', function() {
@@ -181,8 +226,8 @@ describe('Strategy', function() {
         });
 
         it('should fail with challenge', function() {
-            expect(challenge).to.be.a.string;
-            expect(challenge).to.equal('Bearer realm="OAUTH", error="invalid_token", error_description="The token is expired"');
+          expect(challenge).to.be.a.string;
+          expect(challenge).to.equal('Bearer realm="OAUTH", error="invalid_token", error_description="The token is expired"');
         });
       });
 
