@@ -1,5 +1,5 @@
 {
-  "name": "passport-okta-oidc-bearer",
+  "name": "passport-oauth-jwt-bearer",
   "version": "0.1.0",
   "description": "Passport.js JWT Bearer strategy with OAuth/OpenID Connect metadata provider",
   "private": true,
